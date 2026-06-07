@@ -27,7 +27,7 @@ app.use(
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: { error: "Too many requests, please try again later." },
 });
@@ -41,6 +41,16 @@ app.use(express.urlencoded({ extended: true }));
 if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
 }
+
+// Ensure MongoDB is connected on every serverless cold start
+let dbConnected = false;
+app.use(async (_req, _res, next) => {
+  if (!dbConnected) {
+    await connectDB();
+    dbConnected = true;
+  }
+  next();
+});
 
 // Health check
 app.get("/health", (_req, res) => {
@@ -65,15 +75,12 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
   res.status(500).json({ error: "Internal server error" });
 });
 
-// Start server
-const start = async () => {
-  await connectDB();
+// Local dev server (ignored by Vercel)
+if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, () => {
     console.log(`\n🚀 IdeaSprit API running on http://localhost:${PORT}`);
     console.log(`   Environment: ${process.env.NODE_ENV || "development"}\n`);
   });
-};
-
-start();
+}
 
 export default app;
