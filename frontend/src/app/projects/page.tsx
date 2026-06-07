@@ -1,17 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { projects } from "@/data/mockData";
+import { api } from "@/lib/api";
+import type { Project } from "@/types";
 import { ExternalLink, Github, ArrowLeft, Filter, Sparkles } from "lucide-react";
 
 const categories = ["All", "Web App", "Dashboard", "Mobile App", "Website"];
 
 export default function ProjectsPage() {
   const [activeCategory, setActiveCategory] = useState("All");
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.projects
+      .list()
+      .then(setProjects)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered =
     activeCategory === "All"
@@ -72,102 +83,138 @@ export default function ProjectsPage() {
             ))}
           </div>
 
-          {/* Projects Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((project, index) => (
-              <div
-                key={project.id}
-                className="group glass-card rounded-2xl overflow-hidden border border-white/5 hover:border-violet-500/25"
-              >
-                {/* Image */}
-                <div className="relative h-52 overflow-hidden">
-                  <Image
-                    src={project.image}
-                    alt={project.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-space-900/80 via-transparent to-transparent" />
-
-                  {/* Category badge */}
-                  <div className="absolute top-3 left-3">
-                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-violet-600/80 text-white backdrop-blur-sm">
-                      {project.category}
-                    </span>
+          {/* Loading skeleton */}
+          {loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="glass-card rounded-2xl border border-white/5 animate-pulse">
+                  <div className="h-52 bg-white/5 rounded-t-2xl" />
+                  <div className="p-5 space-y-3">
+                    <div className="h-4 bg-white/5 rounded w-3/4" />
+                    <div className="h-3 bg-white/5 rounded w-full" />
+                    <div className="h-3 bg-white/5 rounded w-2/3" />
                   </div>
+                </div>
+              ))}
+            </div>
+          )}
 
-                  {/* Featured badge */}
-                  {project.featured && (
-                    <div className="absolute top-3 right-3">
-                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gold-500/80 text-white backdrop-blur-sm flex items-center gap-1">
-                        <Sparkles className="w-3 h-3" />
-                        Featured
+          {/* Projects Grid */}
+          {!loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.map((project) => (
+                <div
+                  key={project._id}
+                  className="group glass-card rounded-2xl overflow-hidden border border-white/5 hover:border-violet-500/25"
+                >
+                  {/* Image */}
+                  <div className="relative h-52 overflow-hidden">
+                    <Image
+                      src={project.image}
+                      alt={project.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-space-900/80 via-transparent to-transparent" />
+
+                    {/* Category badge */}
+                    <div className="absolute top-3 left-3">
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-violet-600/80 text-white backdrop-blur-sm">
+                        {project.category}
                       </span>
                     </div>
-                  )}
 
-                  {/* Hover actions */}
-                  <div className="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all">
-                    <a
-                      href={project.demoLink}
-                      className="w-9 h-9 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-violet-600/50 transition-all"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                    <a
-                      href={project.githubLink}
-                      className="w-9 h-9 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-violet-600/50 transition-all"
-                    >
-                      <Github className="w-4 h-4" />
-                    </a>
+                    {/* Featured badge */}
+                    {project.featured && (
+                      <div className="absolute top-3 right-3">
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gold-500/80 text-white backdrop-blur-sm flex items-center gap-1">
+                          <Sparkles className="w-3 h-3" />
+                          Featured
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Hover actions */}
+                    <div className="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all">
+                      {project.demoLink && (
+                        <a
+                          href={project.demoLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-9 h-9 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-violet-600/50 transition-all"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      )}
+                      {project.githubLink && (
+                        <a
+                          href={project.githubLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-9 h-9 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-violet-600/50 transition-all"
+                        >
+                          <Github className="w-4 h-4" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-5">
+                    <h3 className="text-white font-bold text-base mb-2 group-hover:text-violet-300 transition-colors">
+                      {project.title}
+                    </h3>
+                    <p className="text-slate-400 text-sm leading-relaxed mb-4">
+                      {project.description}
+                    </p>
+
+                    {/* Tech stack */}
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                      {project.technologies.map((tech) => (
+                        <span
+                          key={tech}
+                          className="px-2.5 py-1 text-xs font-medium bg-space-700 text-slate-300 rounded-lg border border-white/5"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Links */}
+                    <div className="flex items-center gap-3">
+                      {project.demoLink && (
+                        <a
+                          href={project.demoLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 text-xs font-semibold text-violet-400 hover:text-violet-300 transition-colors"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Live Demo
+                        </a>
+                      )}
+                      {project.demoLink && project.githubLink && (
+                        <span className="text-slate-700">•</span>
+                      )}
+                      {project.githubLink && (
+                        <a
+                          href={project.githubLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+                        >
+                          <Github className="w-3.5 h-3.5" />
+                          Source Code
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+          )}
 
-                {/* Content */}
-                <div className="p-5">
-                  <h3 className="text-white font-bold text-base mb-2 group-hover:text-violet-300 transition-colors">
-                    {project.title}
-                  </h3>
-                  <p className="text-slate-400 text-sm leading-relaxed mb-4">
-                    {project.description}
-                  </p>
-
-                  {/* Tech stack */}
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {project.technologies.map((tech) => (
-                      <span
-                        key={tech}
-                        className="px-2.5 py-1 text-xs font-medium bg-space-700 text-slate-300 rounded-lg border border-white/5"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Links */}
-                  <div className="flex items-center gap-3">
-                    <a
-                      href={project.demoLink}
-                      className="flex items-center gap-1.5 text-xs font-semibold text-violet-400 hover:text-violet-300 transition-colors"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      Live Demo
-                    </a>
-                    <span className="text-slate-700">•</span>
-                    <a
-                      href={project.githubLink}
-                      className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
-                    >
-                      <Github className="w-3.5 h-3.5" />
-                      Source Code
-                    </a>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {filtered.length === 0 && (
+          {!loading && filtered.length === 0 && (
             <div className="text-center py-20">
               <p className="text-slate-500 text-lg">No projects in this category yet.</p>
             </div>

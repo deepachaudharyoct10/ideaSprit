@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { developers } from "@/data/mockData";
+import { api } from "@/lib/api";
 import {
   ArrowLeft,
   Github,
@@ -17,13 +17,15 @@ import {
   Star,
 } from "lucide-react";
 
-export async function generateStaticParams() {
-  return developers.map((dev) => ({ id: dev.id }));
-}
+export const dynamic = "force-dynamic";
 
-export default function DeveloperProfile({ params }: { params: { id: string } }) {
-  const dev = developers.find((d) => d.id === params.id);
-  if (!dev) notFound();
+export default async function DeveloperProfile({ params }: { params: { id: string } }) {
+  let dev;
+  try {
+    dev = await api.developers.get(params.id);
+  } catch {
+    notFound();
+  }
 
   const skillLevels = [85, 90, 80, 75, 88];
 
@@ -86,17 +88,19 @@ export default function DeveloperProfile({ params }: { params: { id: string } })
                   { icon: Github, href: dev.github, color: "hover:text-white" },
                   { icon: Linkedin, href: dev.linkedin, color: "hover:text-blue-400" },
                   { icon: Twitter, href: dev.twitter, color: "hover:text-sky-400" },
-                ].map(({ icon: Icon, href, color }, i) => (
-                  <a
-                    key={i}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`w-9 h-9 rounded-lg glass flex items-center justify-center text-slate-500 ${color} transition-all`}
-                  >
-                    <Icon className="w-4 h-4" />
-                  </a>
-                ))}
+                ].map(({ icon: Icon, href, color }, i) =>
+                  href ? (
+                    <a
+                      key={i}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`w-9 h-9 rounded-lg glass flex items-center justify-center text-slate-500 ${color} transition-all`}
+                    >
+                      <Icon className="w-4 h-4" />
+                    </a>
+                  ) : null
+                )}
               </div>
 
               <Link
@@ -148,67 +152,73 @@ export default function DeveloperProfile({ params }: { params: { id: string } })
               </div>
 
               {/* Education */}
-              <div className="glass-card rounded-2xl p-6 border border-white/5">
-                <h2 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-gold-400" />
-                  Education
-                </h2>
-                {dev.education.map((edu, i) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-gold-500/10 flex items-center justify-center shrink-0">
-                      <GraduationCap className="w-5 h-5 text-gold-400" />
-                    </div>
-                    <div>
-                      <h3 className="text-white font-semibold text-sm">{edu.degree}</h3>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <MapPin className="w-3 h-3 text-slate-500" />
-                        <span className="text-slate-400 text-xs">{edu.institution}</span>
-                        <span className="text-slate-600 text-xs">•</span>
-                        <span className="text-slate-500 text-xs">{edu.year}</span>
+              {dev.education.length > 0 && (
+                <div className="glass-card rounded-2xl p-6 border border-white/5">
+                  <h2 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+                    <GraduationCap className="w-5 h-5 text-gold-400" />
+                    Education
+                  </h2>
+                  {dev.education.map((edu, i) => (
+                    <div key={i} className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-gold-500/10 flex items-center justify-center shrink-0">
+                        <GraduationCap className="w-5 h-5 text-gold-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-white font-semibold text-sm">{edu.degree}</h3>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <MapPin className="w-3 h-3 text-slate-500" />
+                          <span className="text-slate-400 text-xs">{edu.institution}</span>
+                          <span className="text-slate-600 text-xs">•</span>
+                          <span className="text-slate-500 text-xs">{edu.year}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
 
               {/* Achievements */}
-              <div className="glass-card rounded-2xl p-6 border border-white/5">
-                <h2 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                  <Award className="w-5 h-5 text-violet-400" />
-                  Achievements & Certifications
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {dev.achievements.map((ach, i) => (
-                    <div
-                      key={i}
-                      className="flex items-start gap-3 p-3 rounded-xl bg-violet-600/5 border border-violet-500/10"
-                    >
-                      <div className="w-6 h-6 rounded-lg bg-violet-600/20 flex items-center justify-center shrink-0 mt-0.5">
-                        <Award className="w-3.5 h-3.5 text-violet-400" />
+              {dev.achievements.length > 0 && (
+                <div className="glass-card rounded-2xl p-6 border border-white/5">
+                  <h2 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+                    <Award className="w-5 h-5 text-violet-400" />
+                    Achievements & Certifications
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {dev.achievements.map((ach, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-3 p-3 rounded-xl bg-violet-600/5 border border-violet-500/10"
+                      >
+                        <div className="w-6 h-6 rounded-lg bg-violet-600/20 flex items-center justify-center shrink-0 mt-0.5">
+                          <Award className="w-3.5 h-3.5 text-violet-400" />
+                        </div>
+                        <span className="text-slate-300 text-sm">{ach}</span>
                       </div>
-                      <span className="text-slate-300 text-sm">{ach}</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Projects */}
-              <div className="glass-card rounded-2xl p-6 border border-white/5">
-                <h2 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-cyan-400" />
-                  Notable Projects
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  {dev.projects.map((proj) => (
-                    <span
-                      key={proj}
-                      className="px-4 py-2 glass rounded-xl text-sm text-slate-300 border border-white/5 hover:border-cyan-500/20 hover:text-cyan-400 transition-all cursor-pointer"
-                    >
-                      {proj}
-                    </span>
-                  ))}
+              {dev.projects.length > 0 && (
+                <div className="glass-card rounded-2xl p-6 border border-white/5">
+                  <h2 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+                    <Briefcase className="w-5 h-5 text-cyan-400" />
+                    Notable Projects
+                  </h2>
+                  <div className="flex flex-wrap gap-2">
+                    {dev.projects.map((proj) => (
+                      <span
+                        key={proj}
+                        className="px-4 py-2 glass rounded-xl text-sm text-slate-300 border border-white/5 hover:border-cyan-500/20 hover:text-cyan-400 transition-all cursor-pointer"
+                      >
+                        {proj}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

@@ -1,7 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Star, Quote } from "lucide-react";
-import { testimonials, clients } from "@/data/mockData";
+import { clients } from "@/data/mockData";
+import { api } from "@/lib/api";
+import type { Testimonial } from "@/types";
 import Image from "next/image";
 
 function StarRating({ rating }: { rating: number }) {
@@ -18,6 +21,17 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 export default function TrustedClients() {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.testimonials
+      .list()
+      .then(setTestimonials)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <section className="relative py-24 overflow-hidden">
       <div className="absolute inset-0 bg-space-900" />
@@ -59,50 +73,76 @@ export default function TrustedClients() {
           </div>
         </div>
 
+        {/* Testimonials loading */}
+        {loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="glass-card rounded-2xl p-7 border border-white/5 animate-pulse">
+                <div className="h-4 bg-white/5 rounded w-1/3 mb-4" />
+                <div className="h-3 bg-white/5 rounded w-full mb-2" />
+                <div className="h-3 bg-white/5 rounded w-4/5 mb-6" />
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-full bg-white/5" />
+                  <div className="space-y-1">
+                    <div className="h-3 bg-white/5 rounded w-24" />
+                    <div className="h-2 bg-white/5 rounded w-16" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Testimonials */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {testimonials.map((t, index) => (
-            <div
-              key={t.id}
-              className="glass-card rounded-2xl p-7 border border-white/5 hover:border-cyan-500/20 group"
-            >
-              {/* Quote icon */}
-              <div className="flex items-start justify-between mb-4">
-                <StarRating rating={t.rating} />
-                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center opacity-60 group-hover:opacity-100 transition-opacity">
-                  <Quote className="w-5 h-5 text-cyan-400" />
+        {!loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {testimonials.map((t) => (
+              <div
+                key={t._id}
+                className="glass-card rounded-2xl p-7 border border-white/5 hover:border-cyan-500/20 group"
+              >
+                {/* Quote icon */}
+                <div className="flex items-start justify-between mb-4">
+                  <StarRating rating={t.rating} />
+                  <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center opacity-60 group-hover:opacity-100 transition-opacity">
+                    <Quote className="w-5 h-5 text-cyan-400" />
+                  </div>
+                </div>
+
+                {/* Review */}
+                <p className="text-slate-300 text-sm leading-relaxed mb-5 italic">
+                  &ldquo;{t.review}&rdquo;
+                </p>
+
+                {/* Author */}
+                <div className="flex items-center gap-3">
+                  <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-violet-500/30">
+                    <Image
+                      src={t.image}
+                      alt={t.name}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  </div>
+                  <div>
+                    <div className="text-white font-semibold text-sm">{t.name}</div>
+                    <div className="text-slate-500 text-xs">{t.role}</div>
+                  </div>
+                  <div className="ml-auto">
+                    <span className="px-3 py-1 text-xs font-semibold bg-violet-600/10 text-violet-400 border border-violet-500/20 rounded-full">
+                      {t.company}
+                    </span>
+                  </div>
                 </div>
               </div>
+            ))}
+          </div>
+        )}
 
-              {/* Review */}
-              <p className="text-slate-300 text-sm leading-relaxed mb-5 italic">
-                &ldquo;{t.review}&rdquo;
-              </p>
-
-              {/* Author */}
-              <div className="flex items-center gap-3">
-                <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-violet-500/30">
-                  <Image
-                    src={t.image}
-                    alt={t.name}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
-                </div>
-                <div>
-                  <div className="text-white font-semibold text-sm">{t.name}</div>
-                  <div className="text-slate-500 text-xs">{t.role}</div>
-                </div>
-                <div className="ml-auto">
-                  <span className="px-3 py-1 text-xs font-semibold bg-violet-600/10 text-violet-400 border border-violet-500/20 rounded-full">
-                    {t.company}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        {!loading && testimonials.length === 0 && (
+          <p className="text-center text-slate-500 py-12">No testimonials yet.</p>
+        )}
 
         {/* Trust badges */}
         <div className="mt-12 flex flex-wrap items-center justify-center gap-8">

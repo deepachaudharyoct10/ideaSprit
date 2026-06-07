@@ -9,6 +9,7 @@ import developerRoutes from "./routes/developers";
 import projectRoutes from "./routes/projects";
 import testimonialRoutes from "./routes/testimonials";
 import contactRoutes from "./routes/contact";
+import authRoutes from "./routes/auth";
 
 dotenv.config();
 
@@ -47,6 +48,7 @@ app.get("/health", (_req, res) => {
 });
 
 // API routes
+app.use("/api/auth", authRoutes);
 app.use("/api/developers", developerRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/testimonials", testimonialRoutes);

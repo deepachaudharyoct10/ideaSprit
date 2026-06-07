@@ -1,0 +1,45 @@
+import type { Developer, Project, Testimonial, Contact } from "@/types";
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    ...options,
+    headers: { "Content-Type": "application/json", ...options?.headers },
+  });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || "API error");
+  return data.data as T;
+}
+
+export const api = {
+  developers: {
+    list: () => apiFetch<Developer[]>("/api/developers"),
+    get: (id: string) => apiFetch<Developer>(`/api/developers/${id}`),
+    delete: (id: string) =>
+      apiFetch<void>(`/api/developers/${id}`, { method: "DELETE" }),
+  },
+  projects: {
+    list: (category?: string) =>
+      apiFetch<Project[]>(
+        `/api/projects${category && category !== "All" ? `?category=${encodeURIComponent(category)}` : ""}`
+      ),
+    delete: (id: string) =>
+      apiFetch<void>(`/api/projects/${id}`, { method: "DELETE" }),
+  },
+  testimonials: {
+    list: () => apiFetch<Testimonial[]>("/api/testimonials"),
+    delete: (id: string) =>
+      apiFetch<void>(`/api/testimonials/${id}`, { method: "DELETE" }),
+  },
+  contacts: {
+    list: () => apiFetch<Contact[]>("/api/contact"),
+    updateStatus: (id: string, status: string) =>
+      apiFetch<Contact>(`/api/contact/${id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      }),
+    delete: (id: string) =>
+      apiFetch<void>(`/api/contact/${id}`, { method: "DELETE" }),
+  },
+};

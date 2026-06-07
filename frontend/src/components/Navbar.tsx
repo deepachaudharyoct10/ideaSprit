@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X, Zap } from "lucide-react";
+import { isAuthenticated } from "@/lib/auth";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -15,11 +16,16 @@ const navLinks = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    setIsAdmin(isAuthenticated());
   }, []);
 
   return (
@@ -60,9 +66,11 @@ export default function Navbar() {
 
           {/* CTA Button */}
           <div className="hidden md:flex items-center gap-3">
-            <Link href="/admin" className="text-sm text-slate-400 hover:text-white transition-colors">
-              Admin
-            </Link>
+            {isAdmin && (
+              <Link href="/admin" className="text-sm text-slate-400 hover:text-white transition-colors">
+                Admin
+              </Link>
+            )}
             <Link href="/#contact" className="btn-primary text-sm py-2 px-5">
               Get Started
             </Link>
@@ -90,6 +98,15 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setIsOpen(false)}
+                className="block px-5 py-3 text-violet-400 hover:text-violet-300 hover:bg-white/5 transition-all text-sm font-medium"
+              >
+                Admin Dashboard
+              </Link>
+            )}
             <div className="px-5 pt-3 border-t border-white/5">
               <Link
                 href="/#contact"
