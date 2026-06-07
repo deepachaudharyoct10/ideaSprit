@@ -26,6 +26,9 @@ import {
 import { api } from "@/lib/api";
 import { isAuthenticated, clearToken } from "@/lib/auth";
 import type { Developer, Project, Testimonial, Contact } from "@/types";
+import AddDeveloperModal from "@/components/admin/AddDeveloperModal";
+import AddProjectModal from "@/components/admin/AddProjectModal";
+import AddTestimonialModal from "@/components/admin/AddTestimonialModal";
 
 type TabType = "overview" | "developers" | "projects" | "testimonials" | "contacts";
 
@@ -45,6 +48,9 @@ export default function AdminPage() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddDeveloper, setShowAddDeveloper] = useState(false);
+  const [showAddProject, setShowAddProject] = useState(false);
+  const [showAddTestimonial, setShowAddTestimonial] = useState(false);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -303,7 +309,7 @@ export default function AdminPage() {
                 <div className="space-y-5">
                   <div className="flex items-center justify-between">
                     <p className="text-slate-400 text-sm">{developers.length} developers</p>
-                    <button className="btn-primary text-sm py-2 px-4">
+                    <button onClick={() => setShowAddDeveloper(true)} className="btn-primary text-sm py-2 px-4">
                       <Plus className="w-4 h-4" />
                       Add Developer
                     </button>
@@ -349,7 +355,7 @@ export default function AdminPage() {
                 <div className="space-y-5">
                   <div className="flex items-center justify-between">
                     <p className="text-slate-400 text-sm">{projects.length} projects</p>
-                    <button className="btn-primary text-sm py-2 px-4">
+                    <button onClick={() => setShowAddProject(true)} className="btn-primary text-sm py-2 px-4">
                       <Plus className="w-4 h-4" />
                       Add Project
                     </button>
@@ -407,7 +413,7 @@ export default function AdminPage() {
                 <div className="space-y-5">
                   <div className="flex items-center justify-between">
                     <p className="text-slate-400 text-sm">{testimonials.length} testimonials</p>
-                    <button className="btn-primary text-sm py-2 px-4">
+                    <button onClick={() => setShowAddTestimonial(true)} className="btn-primary text-sm py-2 px-4">
                       <Plus className="w-4 h-4" />
                       Add Testimonial
                     </button>
@@ -521,6 +527,27 @@ export default function AdminPage() {
           )}
         </div>
       </main>
+
+      {showAddDeveloper && (
+        <AddDeveloperModal
+          onClose={() => setShowAddDeveloper(false)}
+          onAdded={(dev) => setDevelopers((prev) => [dev, ...prev])}
+        />
+      )}
+
+      {showAddProject && (
+        <AddProjectModal
+          onClose={() => setShowAddProject(false)}
+          onAdded={(proj) => setProjects((prev) => [proj, ...prev])}
+        />
+      )}
+
+      {showAddTestimonial && (
+        <AddTestimonialModal
+          onClose={() => setShowAddTestimonial(false)}
+          onAdded={(t) => setTestimonials((prev) => [t, ...prev])}
+        />
+      )}
     </div>
   );
 }

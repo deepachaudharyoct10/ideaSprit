@@ -103,12 +103,6 @@ export default async function DeveloperProfile({ params }: { params: { id: strin
                 )}
               </div>
 
-              <Link
-                href="/#contact"
-                className="btn-primary w-full justify-center text-sm"
-              >
-                Hire Me
-              </Link>
             </div>
 
             {/* Main content */}
