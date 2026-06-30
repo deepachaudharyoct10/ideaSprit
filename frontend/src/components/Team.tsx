@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Github, Linkedin, Twitter, Briefcase } from "lucide-react";
+import { ArrowRight, Github, Linkedin, Twitter, Briefcase, Users } from "lucide-react";
 import { api } from "@/lib/api";
 import type { Developer } from "@/types";
 
@@ -44,62 +44,55 @@ export default function Team() {
           </p>
         </div>
 
-        {/* Loading skeleton */}
-        {loading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="glass-card rounded-2xl border border-white/5 p-6 animate-pulse">
-                <div className="w-20 h-20 rounded-2xl bg-white/5 mx-auto mb-4" />
-                <div className="h-4 bg-white/5 rounded mx-auto w-3/4 mb-2" />
-                <div className="h-3 bg-white/5 rounded mx-auto w-1/2" />
+        {/* Cards + CTA panel — items-stretch so all cols are same height */}
+        <div className="flex flex-col lg:flex-row gap-5 items-stretch">
+
+          {/* ── Developer cards — grid rows also stretch ── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 flex-1 auto-rows-fr">
+
+            {loading && Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="glass-card rounded-2xl border border-white/5 p-5 animate-pulse">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-white/5 shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3.5 bg-white/5 rounded w-3/4" />
+                    <div className="h-2.5 bg-white/5 rounded w-1/2" />
+                  </div>
+                </div>
+                <div className="h-8 bg-white/5 rounded-xl" />
               </div>
             ))}
-          </div>
-        )}
 
-        {/* Developer Cards */}
-        {!loading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {developers.map((dev, index) => (
+            {!loading && developers.slice(0, 2).map((dev, index) => (
               <div
                 key={dev._id}
-                className="group relative glass-card rounded-2xl overflow-hidden border border-white/5 hover:border-violet-500/30"
+                className="group glass-card rounded-2xl overflow-hidden border border-white/5 hover:border-violet-500/30 transition-all flex flex-col"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                {/* Top gradient bar */}
-                <div className="h-1 bg-gradient-to-r from-violet-600 via-cyan-500 to-violet-600 bg-[length:200%_100%] group-hover:animate-gradient-x" />
-
-                <div className="p-6">
-                  {/* Avatar */}
-                  <div className="relative mx-auto w-20 h-20 mb-4">
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-500 blur-md opacity-40 group-hover:opacity-70 transition-opacity" />
-                    <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-violet-500/30">
-                      <Image
-                        src={dev.image}
-                        alt={dev.name}
-                        fill
-                        className="object-cover"
-                        unoptimized
-                      />
+                <div className="h-0.5 bg-gradient-to-r from-violet-600 via-cyan-500 to-violet-600" />
+                <div className="p-5 flex flex-col flex-1">
+                  {/* Avatar + name row */}
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="relative w-12 h-12 shrink-0">
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-violet-600 to-cyan-500 blur opacity-40" />
+                      <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-violet-500/30">
+                        <Image src={dev.image} alt={dev.name} fill className="object-cover" unoptimized />
+                      </div>
                     </div>
-                  </div>
-
-                  {/* Info */}
-                  <div className="text-center mb-4">
-                    <h3 className="text-white font-bold text-base mb-1">{dev.name}</h3>
-                    <p className="text-violet-400 text-xs font-medium mb-2">{dev.role}</p>
-                    <div className="flex items-center justify-center gap-1.5 text-slate-500 text-xs">
-                      <Briefcase className="w-3 h-3" />
-                      <span>{dev.experience} experience</span>
+                    <div className="min-w-0">
+                      <h3 className="text-white font-bold text-sm truncate">{dev.name}</h3>
+                      <p className="text-violet-400 text-xs">{dev.role}</p>
+                      <div className="flex items-center gap-1 text-slate-500 text-xs mt-0.5">
+                        <Briefcase className="w-2.5 h-2.5" />
+                        <span>{dev.experience}</span>
+                      </div>
                     </div>
                   </div>
 
                   {/* Skills */}
-                  <div className="flex flex-wrap justify-center gap-1.5 mb-5">
+                  <div className="flex flex-wrap gap-1.5 mb-3">
                     {dev.skills.slice(0, 3).map((skill) => (
-                      <span key={skill} className="skill-tag text-xs">
-                        {skill}
-                      </span>
+                      <span key={skill} className="skill-tag text-xs">{skill}</span>
                     ))}
                     {dev.skills.length > 3 && (
                       <span className="skill-tag text-xs opacity-60">+{dev.skills.length - 3}</span>
@@ -107,52 +100,61 @@ export default function Team() {
                   </div>
 
                   {/* Social links */}
-                  <div className="flex items-center justify-center gap-2 mb-4">
+                  <div className="flex items-center gap-2 mb-3">
                     {[
                       { icon: Github, href: dev.github },
                       { icon: Linkedin, href: dev.linkedin },
                       { icon: Twitter, href: dev.twitter },
                     ].map(({ icon: Icon, href }, i) =>
                       href ? (
-                        <a
-                          key={i}
-                          href={href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-8 h-8 rounded-lg glass flex items-center justify-center text-slate-500 hover:text-violet-400 hover:border-violet-500/30 transition-all"
-                        >
-                          <Icon className="w-3.5 h-3.5" />
+                        <a key={i} href={href} target="_blank" rel="noopener noreferrer"
+                          className="w-7 h-7 rounded-lg glass flex items-center justify-center text-slate-500 hover:text-violet-400 transition-all">
+                          <Icon className="w-3 h-3" />
                         </a>
                       ) : null
                     )}
                   </div>
 
-                  {/* View Profile button */}
-                  <Link
-                    href={`/team/${dev._id}`}
-                    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold text-violet-400 border border-violet-500/20 hover:bg-violet-600/10 hover:border-violet-500/40 transition-all group/btn"
-                  >
+                  {/* View Profile — always at bottom */}
+                  <Link href={`/team/${dev._id}`}
+                    className="mt-auto flex items-center justify-center gap-1.5 w-full text-xs font-semibold text-violet-400 border border-violet-500/20 hover:bg-violet-600/10 hover:border-violet-500/40 px-3 py-2 rounded-xl transition-all group/btn">
                     View Profile
-                    <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
+                    <ArrowRight className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
                   </Link>
                 </div>
               </div>
             ))}
+
+            {!loading && developers.length === 0 && (
+              <p className="text-slate-500 text-sm col-span-2 text-center py-8">No team members found.</p>
+            )}
           </div>
-        )}
 
-        {!loading && developers.length === 0 && (
-          <p className="text-center text-slate-500 py-12">No team members found.</p>
-        )}
+          {/* ── Right CTA panel (desktop only) ── */}
+          <div className="hidden lg:flex lg:w-56 xl:w-64 glass-card rounded-2xl border border-white/5 p-5 flex-col gap-4">
+            <div className="w-9 h-9 rounded-xl bg-violet-600/15 flex items-center justify-center">
+              <Users className="w-4.5 h-4.5 text-violet-400" />
+            </div>
+            <div>
+              <h3 className="text-white font-bold text-sm mb-1">Meet the full team</h3>
+              <p className="text-slate-400 text-xs leading-relaxed">
+                We&apos;re hiring talented developers. Verify your email to explore everyone.
+              </p>
+            </div>
+            <Link href="/team" className="btn-primary w-full justify-center text-xs py-2.5">
+              <Users className="w-3.5 h-3.5" />
+              View All Developers
+            </Link>
+          </div>
 
-        {/* CTA */}
-        <div className="text-center mt-10">
-          <p className="text-slate-400 text-sm">
-            Want to join our team?{" "}
-            <a href="mailto:careers@ideasprit.com" className="text-violet-400 hover:text-violet-300 font-medium transition-colors">
-              We&apos;re hiring!
-            </a>
-          </p>
+        </div>
+
+        {/* Mobile: button below */}
+        <div className="mt-5 lg:hidden text-center">
+          <Link href="/team" className="btn-primary justify-center mx-auto w-fit text-sm">
+            <Users className="w-4 h-4" />
+            View All Developers
+          </Link>
         </div>
       </div>
     </section>
