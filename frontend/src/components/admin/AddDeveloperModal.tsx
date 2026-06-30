@@ -8,6 +8,8 @@ import type { Developer } from "@/types";
 interface Props {
   onClose: () => void;
   onAdded: (dev: Developer) => void;
+  onUpdated?: (dev: Developer) => void;
+  developer?: Developer; // when provided → edit mode
 }
 
 const empty = {
@@ -25,8 +27,26 @@ const empty = {
   projects: [""],
 };
 
-export default function AddDeveloperModal({ onClose, onAdded }: Props) {
-  const [form, setForm] = useState(empty);
+function devToForm(d: Developer) {
+  return {
+    name: d.name,
+    role: d.role,
+    image: d.image,
+    bio: d.bio,
+    experience: d.experience,
+    github: d.github ?? "",
+    linkedin: d.linkedin ?? "",
+    twitter: d.twitter ?? "",
+    skills: d.skills?.length ? d.skills : [""],
+    education: d.education?.length ? d.education : [{ degree: "", institution: "", year: "" }],
+    achievements: d.achievements?.length ? d.achievements : [""],
+    projects: d.projects?.length ? d.projects : [""],
+  };
+}
+
+export default function AddDeveloperModal({ onClose, onAdded, onUpdated, developer }: Props) {
+  const isEdit = !!developer;
+  const [form, setForm] = useState(isEdit ? devToForm(developer) : empty);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -86,11 +106,16 @@ export default function AddDeveloperModal({ onClose, onAdded }: Props) {
         linkedin: form.linkedin || undefined,
         twitter: form.twitter || undefined,
       };
-      const dev = await api.developers.create(payload as Omit<Developer, "_id">);
-      onAdded(dev);
+      if (isEdit) {
+        const updated = await api.developers.update(developer._id, payload);
+        onUpdated?.(updated);
+      } else {
+        const dev = await api.developers.create(payload as Omit<Developer, "_id">);
+        onAdded(dev);
+      }
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to add developer");
+      setError(err instanceof Error ? err.message : `Failed to ${isEdit ? "update" : "add"} developer`);
     } finally {
       setSaving(false);
     }
@@ -106,8 +131,8 @@ export default function AddDeveloperModal({ onClose, onAdded }: Props) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0">
           <div>
-            <h2 className="text-white font-bold text-lg">Add Developer</h2>
-            <p className="text-slate-500 text-xs mt-0.5">Fill in all required fields marked with *</p>
+            <h2 className="text-white font-bold text-lg">{isEdit ? "Edit Developer" : "Add Developer"}</h2>
+            <p className="text-slate-500 text-xs mt-0.5">{isEdit ? `Editing: ${developer.name}` : "Fill in all required fields marked with *"}</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-lg glass flex items-center justify-center text-slate-400 hover:text-white transition-colors">
             <X className="w-4 h-4" />
@@ -243,7 +268,7 @@ export default function AddDeveloperModal({ onClose, onAdded }: Props) {
             disabled={saving}
             className="btn-primary text-sm py-2.5 px-6 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : "Add Developer"}
+            {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : isEdit ? "Save Changes" : "Add Developer"}
           </button>
         </div>
       </div>

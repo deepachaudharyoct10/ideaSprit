@@ -19,6 +19,11 @@ export const api = {
         method: "POST",
         body: JSON.stringify(body),
       }),
+    update: (id: string, body: Partial<Omit<Developer, "_id">>) =>
+      apiFetch<Developer>(`/api/developers/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
     delete: (id: string) =>
       apiFetch<void>(`/api/developers/${id}`, { method: "DELETE" }),
   },

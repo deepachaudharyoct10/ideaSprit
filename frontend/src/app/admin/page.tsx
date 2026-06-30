@@ -52,6 +52,7 @@ export default function AdminPage() {
   const [showAddDeveloper, setShowAddDeveloper] = useState(false);
   const [showAddProject, setShowAddProject] = useState(false);
   const [showAddTestimonial, setShowAddTestimonial] = useState(false);
+  const [editingDeveloper, setEditingDeveloper] = useState<Developer | null>(null);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
 
   const fetchAll = useCallback(async () => {
@@ -340,6 +341,13 @@ export default function AdminPage() {
                             View
                           </Link>
                           <button
+                            onClick={() => setEditingDeveloper(dev)}
+                            className="w-9 h-9 rounded-xl border border-violet-500/20 flex items-center justify-center text-violet-400 hover:bg-violet-600/10 transition-all"
+                            title="Edit developer"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
                             onClick={() => deleteDeveloper(dev._id)}
                             className="w-9 h-9 rounded-xl border border-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500/10 transition-all"
                           >
@@ -561,6 +569,17 @@ export default function AdminPage() {
           onAdded={() => {}}
           onUpdated={(updated) =>
             setProjects((prev) => prev.map((p) => (p._id === updated._id ? updated : p)))
+          }
+        />
+      )}
+
+      {editingDeveloper && (
+        <AddDeveloperModal
+          developer={editingDeveloper}
+          onClose={() => setEditingDeveloper(null)}
+          onAdded={() => {}}
+          onUpdated={(updated) =>
+            setDevelopers((prev) => prev.map((d) => (d._id === updated._id ? updated : d)))
           }
         />
       )}
