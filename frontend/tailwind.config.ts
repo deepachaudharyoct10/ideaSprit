@@ -51,6 +51,8 @@ const config: Config = {
         "shimmer": "shimmer 2s linear infinite",
         "marquee": "marquee 25s linear infinite",
         "marquee2": "marquee2 25s linear infinite",
+        "marquee-left": "marqueeLeft 35s linear infinite",
+        "marquee-right": "marqueeRight 35s linear infinite",
       },
       keyframes: {
         float: {
@@ -98,6 +100,14 @@ const config: Config = {
         marquee2: {
           "0%": { transform: "translateX(100%)" },
           "100%": { transform: "translateX(0%)" },
+        },
+        marqueeLeft: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+        marqueeRight: {
+          "0%": { transform: "translateX(-50%)" },
+          "100%": { transform: "translateX(0)" },
         },
       },
       backgroundImage: {

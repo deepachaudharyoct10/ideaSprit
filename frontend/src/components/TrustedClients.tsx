@@ -1,11 +1,69 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Star, Quote } from "lucide-react";
 import { clients } from "@/data/mockData";
-import { api } from "@/lib/api";
-import type { Testimonial } from "@/types";
 import Image from "next/image";
+
+const TESTIMONIALS = [
+  {
+    id: 1,
+    name: "Rahul Sharma",
+    role: "CEO & Founder",
+    company: "TechStart India",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rahul",
+    rating: 5,
+    review:
+      "IdeaSprit transformed our entire digital presence. Their team delivered a stunning web app ahead of schedule, and the quality far exceeded our expectations. Truly professional.",
+  },
+  {
+    id: 2,
+    name: "Priya Mehta",
+    role: "Founder",
+    company: "StyleCraft",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Priya",
+    rating: 5,
+    review:
+      "Working with IdeaSprit was a seamless experience from day one. They understood our vision perfectly and built exactly what we needed. Our e-commerce sales grew 40% after launch.",
+  },
+  {
+    id: 3,
+    name: "Arjun Patel",
+    role: "CTO",
+    company: "FinFlow Solutions",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Arjun",
+    rating: 5,
+    review:
+      "The team's technical depth is exceptional. They built our fintech dashboard with complex real-time data visualizations — clean code, great communication, zero missed deadlines.",
+  },
+  {
+    id: 4,
+    name: "Sneha Gupta",
+    role: "Director of Operations",
+    company: "HealthBridge",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sneha",
+    rating: 5,
+    review:
+      "From concept to deployment in just 6 weeks — IdeaSprit delivered our patient management portal flawlessly. Exceptional attention to UX detail and accessibility standards.",
+  },
+  {
+    id: 5,
+    name: "Vikram Singh",
+    role: "Managing Director",
+    company: "EduPrime",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram",
+    rating: 4,
+    review:
+      "Our learning platform now handles 10,000+ students daily without a glitch. IdeaSprit's scalable architecture has been rock-solid. Highly recommend them for any ed-tech build.",
+  },
+];
+
+const ROW2 = [
+  TESTIMONIALS[2],
+  TESTIMONIALS[3],
+  TESTIMONIALS[4],
+  TESTIMONIALS[0],
+  TESTIMONIALS[1],
+];
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -20,17 +78,39 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-export default function TrustedClients() {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [loading, setLoading] = useState(true);
+function TestimonialCard({ t }: { t: (typeof TESTIMONIALS)[0] }) {
+  return (
+    <div className="w-80 shrink-0 glass-card rounded-2xl p-6 border border-white/5 hover:border-cyan-500/20 transition-all group mx-3">
+      <div className="flex items-start justify-between mb-3">
+        <StarRating rating={t.rating} />
+        <div className="w-9 h-9 rounded-xl bg-cyan-500/10 flex items-center justify-center opacity-50 group-hover:opacity-100 transition-opacity">
+          <Quote className="w-4 h-4 text-cyan-400" />
+        </div>
+      </div>
 
-  useEffect(() => {
-    api.testimonials
-      .list()
-      .then(setTestimonials)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+      <p className="text-slate-300 text-sm leading-relaxed mb-5 italic line-clamp-4">
+        &ldquo;{t.review}&rdquo;
+      </p>
+
+      <div className="flex items-center gap-3">
+        <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-violet-500/30 shrink-0">
+          <Image src={t.image} alt={t.name} fill className="object-cover" unoptimized />
+        </div>
+        <div className="min-w-0">
+          <div className="text-white font-semibold text-sm truncate">{t.name}</div>
+          <div className="text-slate-500 text-xs truncate">{t.role}</div>
+        </div>
+        <span className="ml-auto shrink-0 px-2.5 py-1 text-xs font-semibold bg-violet-600/10 text-violet-400 border border-violet-500/20 rounded-full">
+          {t.company}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+export default function TrustedClients() {
+  const doubled = [...TESTIMONIALS, ...TESTIMONIALS];
+  const doubled2 = [...ROW2];
 
   return (
     <section className="relative py-24 overflow-hidden">
@@ -73,79 +153,23 @@ export default function TrustedClients() {
           </div>
         </div>
 
-        {/* Testimonials loading */}
-        {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="glass-card rounded-2xl p-7 border border-white/5 animate-pulse">
-                <div className="h-4 bg-white/5 rounded w-1/3 mb-4" />
-                <div className="h-3 bg-white/5 rounded w-full mb-2" />
-                <div className="h-3 bg-white/5 rounded w-4/5 mb-6" />
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-full bg-white/5" />
-                  <div className="space-y-1">
-                    <div className="h-3 bg-white/5 rounded w-24" />
-                    <div className="h-2 bg-white/5 rounded w-16" />
-                  </div>
-                </div>
-              </div>
-            ))}
+        {/* Testimonials infinite marquee */}
+        <div className="space-y-5">
+          {/* Row 1 — scrolls left */}
+          <div className="relative overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-24 z-10 bg-gradient-to-r from-space-900 to-transparent pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-24 z-10 bg-gradient-to-l from-space-900 to-transparent pointer-events-none" />
+            <div className="flex animate-marquee-left" style={{ width: "max-content" }}>
+              {doubled.map((t, i) => (
+                <TestimonialCard key={`r1-${t.id}-${i}`} t={t} />
+              ))}
+            </div>
           </div>
-        )}
 
-        {/* Testimonials */}
-        {!loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {testimonials.map((t) => (
-              <div
-                key={t._id}
-                className="glass-card rounded-2xl p-7 border border-white/5 hover:border-cyan-500/20 group"
-              >
-                {/* Quote icon */}
-                <div className="flex items-start justify-between mb-4">
-                  <StarRating rating={t.rating} />
-                  <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center opacity-60 group-hover:opacity-100 transition-opacity">
-                    <Quote className="w-5 h-5 text-cyan-400" />
-                  </div>
-                </div>
-
-                {/* Review */}
-                <p className="text-slate-300 text-sm leading-relaxed mb-5 italic">
-                  &ldquo;{t.review}&rdquo;
-                </p>
-
-                {/* Author */}
-                <div className="flex items-center gap-3">
-                  <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-violet-500/30">
-                    <Image
-                      src={t.image}
-                      alt={t.name}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                  </div>
-                  <div>
-                    <div className="text-white font-semibold text-sm">{t.name}</div>
-                    <div className="text-slate-500 text-xs">{t.role}</div>
-                  </div>
-                  <div className="ml-auto">
-                    <span className="px-3 py-1 text-xs font-semibold bg-violet-600/10 text-violet-400 border border-violet-500/20 rounded-full">
-                      {t.company}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {!loading && testimonials.length === 0 && (
-          <p className="text-center text-slate-500 py-12">No testimonials yet.</p>
-        )}
+        </div>
 
         {/* Trust badges */}
-        <div className="mt-12 flex flex-wrap items-center justify-center gap-8">
+        <div className="mt-14 flex flex-wrap items-center justify-center gap-8">
           {[
             { label: "5-Star Rating", value: "4.9/5" },
             { label: "Project Success", value: "98%" },

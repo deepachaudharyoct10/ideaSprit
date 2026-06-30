@@ -90,14 +90,14 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-start gap-3 text-sm text-slate-400">
                 <Mail className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
-                <a href="mailto:hello@ideasprit.com" className="hover:text-violet-400 transition-colors">
-                  hello@ideasprit.com
+                <a href="mailto:contact.ideasprit@gmail.com" className="hover:text-violet-400 transition-colors">
+                  contact.ideasprit@gmail.com
                 </a>
               </li>
               <li className="flex items-start gap-3 text-sm text-slate-400">
                 <Phone className="w-4 h-4 text-cyan-400 mt-0.5 shrink-0" />
-                <a href="tel:+919876543210" className="hover:text-cyan-400 transition-colors">
-                  +91 98765 43210
+                <a href="tel:+919540409089" className="hover:text-cyan-400 transition-colors">
+                  +91 95404 09089
                 </a>
               </li>
               <li className="flex items-start gap-3 text-sm text-slate-400">

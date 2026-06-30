@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Contact from "@/models/Contact";
+import OTP from "@/models/OTP";
 import { sendContactEmail } from "@/lib/mailer";
 
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const { name, email, phone, company, description } = await req.json();
+    const { name, email, phone, company, description, otp } = await req.json();
 
     if (!name || !email || !description) {
       return NextResponse.json(
@@ -14,6 +15,16 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Verify OTP
+    if (!otp) {
+      return NextResponse.json({ success: false, error: "OTP is required." }, { status: 400 });
+    }
+    const otpDoc = await OTP.findOne({ email: email.toLowerCase() });
+    if (!otpDoc || otpDoc.code !== otp) {
+      return NextResponse.json({ success: false, error: "Invalid or expired OTP. Please request a new one." }, { status: 400 });
+    }
+    await OTP.deleteOne({ _id: otpDoc._id });
 
     const contact = new Contact({ name, email, phone, company, description });
     await contact.save();
