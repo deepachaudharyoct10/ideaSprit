@@ -1,12 +1,12 @@
 "use client";
 
-import { Globe, Code2, Palette, Shield, ArrowRight, Check } from "lucide-react";
+import { Code2, Smartphone, Bot, Shield, ArrowRight, Check } from "lucide-react";
 import { services } from "@/data/mockData";
 
 const iconMap = {
-  Globe,
   Code2,
-  Palette,
+  Smartphone,
+  Bot,
   Shield,
 };
 

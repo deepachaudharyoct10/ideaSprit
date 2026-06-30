@@ -8,11 +8,13 @@ import type { Project } from "@/types";
 interface Props {
   onClose: () => void;
   onAdded: (project: Project) => void;
+  onUpdated?: (project: Project) => void;
+  project?: Project; // when provided → edit mode
 }
 
 const CATEGORIES = ["Web App", "Dashboard", "Mobile App", "Website", "Other"];
 
-const empty = {
+const emptyForm = {
   title: "",
   description: "",
   image: "",
@@ -23,12 +25,26 @@ const empty = {
   technologies: [""],
 };
 
-export default function AddProjectModal({ onClose, onAdded }: Props) {
-  const [form, setForm] = useState(empty);
+function projectToForm(p: Project) {
+  return {
+    title: p.title,
+    description: p.description,
+    image: p.image,
+    category: p.category,
+    demoLink: p.demoLink ?? "",
+    githubLink: p.githubLink ?? "",
+    featured: p.featured ?? false,
+    technologies: p.technologies?.length ? p.technologies : [""],
+  };
+}
+
+export default function AddProjectModal({ onClose, onAdded, onUpdated, project }: Props) {
+  const isEdit = !!project;
+  const [form, setForm] = useState(isEdit ? projectToForm(project) : emptyForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  function set<K extends keyof typeof empty>(field: K, value: (typeof empty)[K]) {
+  function set<K extends keyof typeof emptyForm>(field: K, value: (typeof emptyForm)[K]) {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
@@ -60,11 +76,17 @@ export default function AddProjectModal({ onClose, onAdded }: Props) {
         demoLink: form.demoLink || undefined,
         githubLink: form.githubLink || undefined,
       };
-      const project = await api.projects.create(payload as Omit<Project, "_id">);
-      onAdded(project);
+
+      if (isEdit) {
+        const updated = await api.projects.update(project._id, payload);
+        onUpdated?.(updated);
+      } else {
+        const created = await api.projects.create(payload as Omit<Project, "_id">);
+        onAdded(created);
+      }
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to add project");
+      setError(err instanceof Error ? err.message : `Failed to ${isEdit ? "update" : "add"} project`);
     } finally {
       setSaving(false);
     }
@@ -78,8 +100,10 @@ export default function AddProjectModal({ onClose, onAdded }: Props) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0">
           <div>
-            <h2 className="text-white font-bold text-lg">Add Project</h2>
-            <p className="text-slate-500 text-xs mt-0.5">Fields marked with * are required</p>
+            <h2 className="text-white font-bold text-lg">{isEdit ? "Edit Project" : "Add Project"}</h2>
+            <p className="text-slate-500 text-xs mt-0.5">
+              {isEdit ? `Editing: ${project.title}` : "Fields marked with * are required"}
+            </p>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-lg glass flex items-center justify-center text-slate-400 hover:text-white transition-colors">
             <X className="w-4 h-4" />
@@ -89,22 +113,18 @@ export default function AddProjectModal({ onClose, onAdded }: Props) {
         {/* Body */}
         <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 p-6 space-y-5">
 
-          {/* Title */}
           <Field label="Project Title *">
             <input required value={form.title} onChange={(e) => set("title", e.target.value)} placeholder="e.g. NexaShop E-Commerce Platform" className={input} />
           </Field>
 
-          {/* Description */}
           <Field label="Description *">
             <textarea required rows={3} value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Brief description of the project..." className={`${input} resize-none`} />
           </Field>
 
-          {/* Image */}
           <Field label="Cover Image URL *">
-            <input required value={form.image} onChange={(e) => set("image", e.target.value)} placeholder="https://images.unsplash.com/..." className={input} />
+            <input required value={form.image} onChange={(e) => set("image", e.target.value)} placeholder="https://..." className={input} />
           </Field>
 
-          {/* Category + Featured */}
           <div className="grid grid-cols-2 gap-4">
             <Field label="Category *">
               <select required value={form.category} onChange={(e) => set("category", e.target.value)} className={`${input} cursor-pointer`}>
@@ -127,7 +147,6 @@ export default function AddProjectModal({ onClose, onAdded }: Props) {
             </Field>
           </div>
 
-          {/* Links */}
           <div className="grid grid-cols-2 gap-4">
             <Field label="Demo Link">
               <input value={form.demoLink} onChange={(e) => set("demoLink", e.target.value)} placeholder="https://..." className={input} />
@@ -137,7 +156,6 @@ export default function AddProjectModal({ onClose, onAdded }: Props) {
             </Field>
           </div>
 
-          {/* Technologies */}
           <Field label="Technologies *">
             <div className="space-y-2">
               {form.technologies.map((t, i) => (
@@ -167,7 +185,13 @@ export default function AddProjectModal({ onClose, onAdded }: Props) {
             Cancel
           </button>
           <button onClick={handleSubmit} disabled={saving} className="btn-primary text-sm py-2.5 px-6 disabled:opacity-60 disabled:cursor-not-allowed">
-            {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : "Add Project"}
+            {saving ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
+            ) : isEdit ? (
+              "Save Changes"
+            ) : (
+              "Add Project"
+            )}
           </button>
         </div>
       </div>

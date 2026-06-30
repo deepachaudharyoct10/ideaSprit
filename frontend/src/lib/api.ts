@@ -32,6 +32,11 @@ export const api = {
         method: "POST",
         body: JSON.stringify(body),
       }),
+    update: (id: string, body: Partial<Omit<Project, "_id">>) =>
+      apiFetch<Project>(`/api/projects/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
     delete: (id: string) =>
       apiFetch<void>(`/api/projects/${id}`, { method: "DELETE" }),
   },

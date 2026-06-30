@@ -13,6 +13,7 @@ import {
   TrendingUp,
   Eye,
   Trash2,
+  Pencil,
   Plus,
   Search,
   Bell,
@@ -51,6 +52,7 @@ export default function AdminPage() {
   const [showAddDeveloper, setShowAddDeveloper] = useState(false);
   const [showAddProject, setShowAddProject] = useState(false);
   const [showAddTestimonial, setShowAddTestimonial] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -393,12 +395,22 @@ export default function AdminPage() {
                               )}
                             </td>
                             <td className="px-5 py-4">
-                              <button
-                                onClick={() => deleteProject(proj._id)}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => setEditingProject(proj)}
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-violet-400 hover:bg-violet-500/10 transition-all"
+                                  title="Edit project"
+                                >
+                                  <Pencil className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => deleteProject(proj._id)}
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                  title="Delete project"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -539,6 +551,17 @@ export default function AdminPage() {
         <AddProjectModal
           onClose={() => setShowAddProject(false)}
           onAdded={(proj) => setProjects((prev) => [proj, ...prev])}
+        />
+      )}
+
+      {editingProject && (
+        <AddProjectModal
+          project={editingProject}
+          onClose={() => setEditingProject(null)}
+          onAdded={() => {}}
+          onUpdated={(updated) =>
+            setProjects((prev) => prev.map((p) => (p._id === updated._id ? updated : p)))
+          }
         />
       )}
 
