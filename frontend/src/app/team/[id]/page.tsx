@@ -3,7 +3,9 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { api } from "@/lib/api";
+import { connectDB } from "@/lib/mongodb";
+import Developer from "@/models/Developer";
+import type { Developer as DeveloperType } from "@/types";
 import {
   ArrowLeft,
   Github,
@@ -20,12 +22,12 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function DeveloperProfile({ params }: { params: { id: string } }) {
-  let dev;
-  try {
-    dev = await api.developers.get(params.id);
-  } catch {
+  await connectDB();
+  const devDoc = await Developer.findById(params.id).catch(() => null);
+  if (!devDoc || !devDoc.isActive) {
     notFound();
   }
+  const dev: DeveloperType = JSON.parse(JSON.stringify(devDoc));
 
   const skillLevels = [85, 90, 80, 75, 88];
 

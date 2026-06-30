@@ -6,8 +6,6 @@ import Link from "next/link";
 import { Zap, Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { setToken, isAuthenticated } from "@/lib/auth";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
 export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -27,7 +25,7 @@ export default function AdminLoginPage() {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/auth/login`, {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
